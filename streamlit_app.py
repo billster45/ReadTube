@@ -7,7 +7,7 @@ from app.video_processor import combine_screenshots_and_transcript, create_and_s
 from app.summariser import get_summary, summarize_web_page
 import time
 
-st.set_page_config(page_title="ReadTube", page_icon="📚")
+st.set_page_config(page_title="ReadTube", page_icon="📚",layout="centered")
 
 html_file_path_global = ""
 
@@ -65,29 +65,29 @@ def main():
             if st.button('How to tune LLMs in Generative AI Studio (4m 34s)'):
                 url = 'https://youtu.be/4A4W03qUTsw?si=rVcd_iXwQOR8dZLU'
                 st.session_state['url'] = url
-                st.experimental_rerun()
+                st.rerun()
             if st.button('The Illusion of MONEY, TIME & EGO - Alan Watts (10m 36s)'):
                 url = 'https://youtu.be/dYSQ1NF1hvw?si=breSGiLJ6UtvHltk'
                 st.session_state['url'] = url
-                st.experimental_rerun()
+                st.rerun()
         with col2:
             if st.button("This is the tastiest Chicken and Potato recipe you can make at home (4m 20s)"):
                 url = 'https://youtu.be/CiNtYiBt2oQ?si=CVbxg7xKqwUgWrvs'
                 st.session_state['url'] = url
-                st.experimental_rerun()
+                st.rerun()
             if st.button("Intro to Large Language Models - Andrej Karpathy (59m 47s)"):
                 url = 'https://youtu.be/zjkBMFhNj_g?si=X31L84ObefIB5Ghn'
                 st.session_state['url'] = url
-                st.experimental_rerun()
+                st.rerun()
         with col3:
             if st.button("History of Britain in 20 Minutes (21m 38s)"):
                 url = 'https://youtu.be/VcnSsEVsrf0?si=0BrPKm0VyAGd49Xp'
                 st.session_state['url'] = url
-                st.experimental_rerun()
+                st.rerun()
             if st.button("Prof. Geoffrey Hinton - 'Will digital intelligence replace biological intelligence?' Romanes Lecture (36m 53s)"):
                 url = 'https://youtube.com/watch?v=N1TEjTeQeg0&si=ebaKyoOqew4LNKf7'
                 st.session_state['url'] = url
-                st.experimental_rerun()
+                st.rerun()
 
     with st.expander("📖 Example Output", expanded=True):
         st.markdown("""

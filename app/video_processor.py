@@ -5,14 +5,13 @@ from app.summariser import get_summary
 import streamlit as st
 import time
 from jinja2 import Environment, FileSystemLoader
-
+import pdfkit
 
 def clear_output_directory(directory_path):
     for item in os.listdir(directory_path):
         if item.endswith('.html'):
             os.remove(os.path.join(directory_path, item))
             
-
 def create_and_show_html_main(html_file_path):
     if os.path.exists(html_file_path):
         with open(html_file_path, "r") as file:
@@ -23,11 +22,26 @@ def create_and_show_html_main(html_file_path):
         download_key = f"download_{html_file_path}_{timestamp}"
         with open(html_file_path, "rb") as file:
             st.download_button(
-                label="Download as html file",
+                label="Download as HTML file",
                 data=file,
                 file_name=os.path.basename(html_file_path),
                 mime="text/html",
                 key=download_key
+            )
+
+        # Configure pdfkit with the wkhtmltopdf executable path inside the devcontainer
+        config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
+
+        # Add PDF download button
+        pdf_file_path = html_file_path.replace(".html", ".pdf")
+        pdfkit.from_file(html_file_path, pdf_file_path, configuration=config)
+        with open(pdf_file_path, "rb") as file:
+            st.download_button(
+                label="Download as PDF file",
+                data=file,
+                file_name=os.path.basename(pdf_file_path),
+                mime="application/pdf",
+                key=f"download_{pdf_file_path}_{timestamp}"
             )
     else:
         st.error("Failed to create HTML content.")

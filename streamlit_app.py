@@ -7,39 +7,92 @@ from app.video_processor import combine_screenshots_and_transcript, create_and_s
 from app.summariser import get_summary, summarize_web_page
 import time
 
-st.set_page_config(page_title="ReadTube", page_icon="📚",layout="centered")
+st.set_page_config(page_title="ReadTube", page_icon="📚", layout="centered")
 
 html_file_path_global = ""
 
 def main():
     global html_file_path_global
     st.title('📚 ReadTube')
-    st.markdown("<h2>Read YouTube Instead! 😂</h2>", unsafe_allow_html=True)
+    st.markdown("<h2>Read YouTube instead! 😂</h2>", unsafe_allow_html=True)
 
-    url = st.text_input('🔗 Paste YouTube link here', value=st.session_state.get('url', ''), key='url_input')
+    with st.sidebar:
+        st.markdown("### 📚 About ReadTube")
+        st.markdown("""
+        ReadTube is an app that takes screenshots of a YouTube video at regular intervals and places the text of what was said around that point. It helps you read through the content of a video quickly.
 
-    with st.expander("⚙️ Settings (Click to enter your API key)", expanded=False):
-        col1, col2 = st.columns(2)
-        with col1:
-            st.write("1. 🔑 Enter OpenAI API key. Get yours at https://platform.openai.com/api-keys This app does not store it")
-            openai_api_key = st.text_input('OpenAI API key', type='password', key='openai_api_key_input', label_visibility='collapsed')
-            
-            st.write("3. 🤖 Select model provider")
-            model_provider = st.selectbox("Model provider", ["openai", "anthropic"], label_visibility='collapsed')
-            
-            st.write("5. 📖 Transcript in readable paragraphs too?")
-            generate_transcript = st.selectbox("Generate transcript", ["No", "Yes"], index=0, label_visibility='collapsed')
-        with col2:
-            st.write("2. 🔑 Enter Anthropic API key. Get yours at https://console.anthropic.com/settings/keys This app does not store it")
-            anthropic_api_key = st.text_input('Anthropic API key', type='password', key='anthropic_api_key_input', label_visibility='collapsed')
-            
-            st.write("4. 📸 Screenshot YouTube video every 30 seconds? More? Less?")
-            segment_length = st.selectbox("Screenshot interval", 
-                                          [10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 90, 120], 
-                                          index=4,  # Index for default value (30 seconds)
-                                          key='segment_length',
-                                          label_visibility='collapsed')
-   
+        The app uses the selected model provider (OpenAI or Anthropic) to generate a summary of the video and optionally if you decide, adds the entire transcript organised into readable paragraphs and with sub-headings the AI model chosen adds in logical places.
+
+        How it works:
+
+        1. 🤖 Select the model provider (OpenAI or Anthropic) you want to use for generating the summary and organising the transcript.
+
+        2. 🔑 Enter your API key for the selected model provider. The app will only show the input box for the relevant API key based on your selection.
+
+        3. 📸 Choose the interval at which you want the app to take screenshots of the YouTube video (e.g., every 30 seconds, 60 seconds, etc.).
+
+        4. 📖 Decide whether you want the app to organise the video transcript into readable paragraphs. This is optional and takes some time for videos longer than 5 minutes.
+
+        5. 🔗 Paste the YouTube video link you want to summarise into the input box.
+
+        6. 📗 Click the "Read it!" button to start the process.
+
+        The app will then:
+
+        - Download the YouTube video.
+        - Fetch the video metadata (title, author, description).
+        - Fetch the video transcript.
+        - Take screenshots of the video at the specified interval.
+        - Display the screenshots and the corresponding transcript segments in the app.
+        - Send the transcript to the selected model provider (OpenAI or Anthropic) for generating a summary and organising the full transcript into readable paragraphs (if the option is selected).
+        - Generate a summary of the video using the selected model provider.
+        - Create an HTML file with the video summary, full organised transcript (if selected), screenshots, and corresponding transcript segments.
+        - Display the generated HTML file in the app, allowing you to read through the video content.
+        - Let's you download the generated content as an HTML file or PDF.
+
+        The app also displays the estimated cost of using the selected model provider for generating the summary and organising the transcript (if selected).
+
+        Additionally, there are example YouTube videos you can try out, as well as an example of what ReadTube can generate.
+        """)
+        st.markdown("---")
+        st.markdown("Made by [billster45](https://github.com/billster45)")
+
+    st.markdown('#### 1. 🤖 Select model provider')
+    model_provider = st.radio("Model provider", ["openai", "anthropic"], horizontal=True, label_visibility='collapsed')
+
+    if model_provider == "openai":
+        st.markdown('#### 2. 🔑 Enter your OpenAI API key')
+        openai_api_key = st.text_input("[Get your key from OpenAI](https://platform.openai.com/account/api-keys) : ", placeholder="sk-****************************************", type="password")
+        anthropic_api_key = ""
+    elif model_provider == "anthropic":
+        st.markdown('#### 2. 🔑 Enter your Anthropic API key')
+        anthropic_api_key = st.text_input("[Get your key from Anthropic Website](https://console.anthropic.com/settings/keys) : ", placeholder="sk-****************************************", type="password")
+        openai_api_key = ""
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("#### 3. 📸 Screenshot YouTube video every X seconds?")
+        segment_length = st.selectbox("Screenshot interval", 
+                                      [10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 90, 120], 
+                                      index=4,
+                                      key='segment_length',
+                                      label_visibility='collapsed')
+    with col2:
+        st.markdown("#### 4. 📖 Add full transcript in readable paragraphs too?")
+        generate_transcript = st.radio("Generate transcript", ["No", "Yes"], horizontal=True, index=0, label_visibility='collapsed')
+
+    st.markdown("#### 5. 🔗 Paste YouTube link below")
+    if model_provider == "openai":
+        if not openai_api_key:
+            url = st.text_input('YouTube URL', value=st.session_state.get('url', ''), key='url_input', disabled=True, placeholder="Please enter the OpenAI API key first", label_visibility='collapsed')
+        else:
+            url = st.text_input('YouTube URL', value=st.session_state.get('url', ''), key='url_input', label_visibility='collapsed')
+    elif model_provider == "anthropic":
+        if not anthropic_api_key:
+            url = st.text_input('YouTube URL', value=st.session_state.get('url', ''), key='url_input', disabled=True, placeholder="Please enter the Anthropic API key first", label_visibility='collapsed')
+        else:
+            url = st.text_input('YouTube URL', value=st.session_state.get('url', ''), key='url_input', label_visibility='collapsed')
+
     if st.button('📗 Read it!'):
         if not url:
             st.error("Please enter a URL to summarise.")

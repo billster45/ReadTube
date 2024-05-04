@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <meta name="author" content="{{ author }}">
+    <meta name="description" content="{{ description }}">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1, h2 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2rem 0;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-width: 100%;
+            background-color: #f8f8f8;
+            padding: 1rem;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 1.5rem;
+        }
+
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        @media screen and (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+            
+            pre {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ title }}</h1>
+        <p id="youtube-link"><a href="{{ url }}">Watch on YouTube</a></p>
+        <p>Author: {{ author }}</p>
+        <h2>Summary (from LLM)</h2>
+        <pre>{{ summary }}</pre>
+        <h2>Full YouTube Video Transcript arranged into paragraphs by LLM</h2>
+        <pre>{{ organized_transcript }}</pre>
+        <h2>Screenshots every 30 seconds with Transcript</h2>
+        {% for screenshot in screenshots %}
+        <div class="image-container">
+            <img src="data:image/png;base64,{{ screenshot.image }}" alt="Screenshot">
+        </div>
+        <pre>{{ screenshot.start|round(2) }} - {{ screenshot.end|round(2) }}: {{ screenshot.text }}</pre>
+        <p><a href="{{ screenshot.youtube_link }}" target="_blank">Watch on YouTube at {{ screenshot.timestamp }}</a></p>
+        {% endfor %}
+    </div>
+</body>
+</html>

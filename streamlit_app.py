@@ -14,7 +14,7 @@ html_file_path_global = ""
 def main():
     global html_file_path_global
     st.title('📚 ReadTube')
-    st.markdown("<h2>Read YouTube instead! 😂</h2>", unsafe_allow_html=True)
+    st.markdown("<h2>Read YouTube instead of watching it!</h2>", unsafe_allow_html=True)
 
     with st.sidebar:
         st.markdown("### 📚 About ReadTube")
@@ -25,7 +25,7 @@ def main():
 
         How it works:
 
-        1. 🤖 Select the model provider (OpenAI or Anthropic) you want to use for generating the summary and organising the transcript.
+        1. 🤖 Select the model provider, OpenAI (gpt-4-turbo) or Anthropic (claude-3-opus-20240229) you want to use for generating the summary and organising the transcript.
 
         2. 🔑 Enter your API key for the selected model provider. The app will only show the input box for the relevant API key based on your selection.
 
@@ -57,31 +57,59 @@ def main():
         st.markdown("---")
         st.markdown("Made by [billster45](https://github.com/billster45)")
 
-    st.markdown('#### 1. 🤖 Select model provider')
-    model_provider = st.radio("Model provider", ["openai", "anthropic"], horizontal=True, label_visibility='collapsed')
-
+    st.markdown('#### 🤖 Model provider')
+    model_provider_options = {
+        "OpenAI": "openai",
+        "Anthropic": "anthropic"
+    }
+    selected_provider = st.radio("Model provider", list(model_provider_options.keys()), horizontal=True, label_visibility='collapsed')
+    model_provider = model_provider_options[selected_provider]
+    
     if model_provider == "openai":
-        st.markdown('#### 2. 🔑 Enter your OpenAI API key')
+        st.markdown('#### 🔑 Your OpenAI API key')
         openai_api_key = st.text_input("[Get your key from OpenAI](https://platform.openai.com/account/api-keys) : ", placeholder="sk-****************************************", type="password")
         anthropic_api_key = ""
     elif model_provider == "anthropic":
-        st.markdown('#### 2. 🔑 Enter your Anthropic API key')
+        st.markdown('#### 🔑 Your Anthropic API key')
         anthropic_api_key = st.text_input("[Get your key from Anthropic Website](https://console.anthropic.com/settings/keys) : ", placeholder="sk-****************************************", type="password")
         openai_api_key = ""
 
     col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("#### 3. 📸 Screenshot YouTube video every X seconds?")
-        segment_length = st.selectbox("Screenshot interval", 
-                                      [10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 90, 120], 
-                                      index=4,
-                                      key='segment_length',
-                                      label_visibility='collapsed')
-    with col2:
-        st.markdown("#### 4. 📖 Add full transcript in readable paragraphs too?")
-        generate_transcript = st.radio("Generate transcript", ["No", "Yes"], horizontal=True, index=0, label_visibility='collapsed')
 
-    st.markdown("#### 5. 🔗 Paste YouTube link below")
+    with col1:
+        st.markdown("#### 📸 Screenshot video every:")
+        interval_options = {
+            "Every 10 seconds": 10,
+            "Every 15 seconds": 15,
+            "Every 20 seconds": 20,
+            "Every 25 seconds": 25,
+            "Every 30 seconds": 30,
+            "Every 35 seconds": 35,
+            "Every 40 seconds": 40,
+            "Every 45 seconds": 45,
+            "Every 50 seconds": 50,
+            "Every 60 seconds": 60,
+            "Every 90 seconds": 90,
+            "Every 120 seconds": 120
+        }
+        selected_interval = st.selectbox("Screenshot interval",
+                                        list(interval_options.keys()),
+                                        index=4,
+                                        key='segment_length',
+                                        label_visibility='collapsed')
+        segment_length = interval_options[selected_interval]
+
+    with col2:
+        st.markdown("#### 📖 Add entire transcript as single readable document too?")
+        generate_transcript = st.radio(
+            "What does this do? ➡️",
+            ["Yes", "No"],
+            horizontal=True,
+            index=0,
+            help="If you select 'Yes', the full transcript will be combined into a single readable document, split into paragraphs with sub-headings. This is in addition to the transcript chunks next to each screenshot. For longer videos, this process takes more time and costs about half a dollar per hour of video."
+        )
+    
+    st.markdown("#### 🔗 YouTube video URL")
     if model_provider == "openai":
         if not openai_api_key:
             url = st.text_input('YouTube URL', value=st.session_state.get('url', ''), key='url_input', disabled=True, placeholder="Please enter the OpenAI API key first", label_visibility='collapsed')
@@ -93,9 +121,41 @@ def main():
         else:
             url = st.text_input('YouTube URL', value=st.session_state.get('url', ''), key='url_input', label_visibility='collapsed')
 
+    st.markdown(
+        """
+        <style>
+        .stButton button {
+            background-color: #2196F3;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .stButton button:hover {
+            background-color: #1976D2;
+        }
+        .youtube-button {
+            background-color: #FF0000;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .youtube-button:hover {
+            background-color: #CC0000;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     if st.button('📗 Read it!'):
         if not url:
-            st.error("Please enter a URL to summarise.")
+            st.error("Please enter a YouTube URL")
         elif "youtube.com" in url or "youtu.be" in url:
             if model_provider == "openai" and not openai_api_key:
                 st.error("Please enter an OpenAI API key to use the OpenAI model.")
@@ -105,9 +165,12 @@ def main():
                 process_video(url, openai_api_key, anthropic_api_key, segment_length, model_provider, generate_transcript)
         else:
             if not anthropic_api_key:
-                st.error("Please enter an Anthropic API key to summarise the content.")
+                st.error("This looks like a web page. I can summarise the content. To do that please enter an Anthropic API key and I will use Claude 3 Haiku to do that quickly.")
             else:
                 process_webpage(url, anthropic_api_key)
+
+    st.divider()  # Add a horizontal line with some default margin
+
 
     with st.expander("🔗 Example YouTube Videos", expanded=True):
         st.markdown("""
@@ -115,29 +178,33 @@ def main():
         """, unsafe_allow_html=True)
         col1, col2, col3 = st.columns(3)
         with col1:
-            if st.button('How to tune LLMs in Generative AI Studio (4m 34s)'):
+            if st.button('📗 How to tune LLMs in Generative AI Studio (4m 34s)'):
                 url = 'https://youtu.be/4A4W03qUTsw?si=rVcd_iXwQOR8dZLU'
                 st.session_state['url'] = url
                 st.rerun()
-            if st.button('The Illusion of MONEY, TIME & EGO - Alan Watts (10m 36s)'):
+            if st.button('📗 How to build a ChatGPT-like clone in Python - Streamlit (12m 31s)'):
+                url = 'https://youtu.be/Z41pEtTAgfs?si=IZ0uwqn2SWcKAt8f'
+                st.session_state['url'] = url
+                st.rerun()
+            if st.button('📗 The Illusion of MONEY, TIME & EGO - Alan Watts (10m 36s)'):
                 url = 'https://youtu.be/dYSQ1NF1hvw?si=breSGiLJ6UtvHltk'
                 st.session_state['url'] = url
                 st.rerun()
         with col2:
-            if st.button("This is the tastiest Chicken and Potato recipe you can make at home (4m 20s)"):
+            if st.button("📗 This is the tastiest Chicken and Potato recipe you can make at home (4m 20s)"):
                 url = 'https://youtu.be/CiNtYiBt2oQ?si=CVbxg7xKqwUgWrvs'
                 st.session_state['url'] = url
                 st.rerun()
-            if st.button("Intro to Large Language Models - Andrej Karpathy (59m 47s)"):
+            if st.button("📗 Intro to Large Language Models - Andrej Karpathy (59m 47s)"):
                 url = 'https://youtu.be/zjkBMFhNj_g?si=X31L84ObefIB5Ghn'
                 st.session_state['url'] = url
                 st.rerun()
         with col3:
-            if st.button("History of Britain in 20 Minutes (21m 38s)"):
+            if st.button("📗 History of Britain in 20 Minutes (21m 38s)"):
                 url = 'https://youtu.be/VcnSsEVsrf0?si=0BrPKm0VyAGd49Xp'
                 st.session_state['url'] = url
                 st.rerun()
-            if st.button("Prof. Geoffrey Hinton - 'Will digital intelligence replace biological intelligence?' Romanes Lecture (36m 53s)"):
+            if st.button("📗 Prof. Geoffrey Hinton - 'Will digital intelligence replace biological intelligence?' Romanes Lecture (36m 53s)"):
                 url = 'https://youtube.com/watch?v=N1TEjTeQeg0&si=ebaKyoOqew4LNKf7'
                 st.session_state['url'] = url
                 st.rerun()
@@ -154,7 +221,7 @@ def main():
 
 def process_video(url, openai_api_key, anthropic_api_key, segment_length, model_provider, generate_transcript):
     if model_provider == "openai":
-        model_choice = "gpt-4-turbo-preview"
+        model_choice = "gpt-4-turbo"
         api_key = openai_api_key
     elif model_provider == "anthropic":
         model_choice = "claude-3-opus-20240229"
@@ -166,7 +233,7 @@ def process_video(url, openai_api_key, anthropic_api_key, segment_length, model_
     generate_transcript = generate_transcript == "Yes"
 
     if not url:
-        st.warning("Please enter a URL.")
+        st.warning("Please enter a YouTube link.")
         return
 
     clear_output_directory('output')

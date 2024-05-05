@@ -173,8 +173,8 @@ def get_summary(text, metadata, model_choice, api_key, generate_transcript, mode
     else:
         # If generate_transcript is False, skip the above processing
         receive_cost_transcript = 0
-        organised_transcript = "Returning the transcript organised into readable paragraphs was not selected. This can take some time if video is over 5 mins)"
-        organised_transcript_placeholder.text_area("Transcript split into paragraphs returning from GPT4-Turbo or Claude", organised_transcript)
+        organised_transcript = "Returning the transcript organised into readable paragraphs was not selected."
+        organised_transcript_placeholder.text_area("Transcript split into paragraphs returning from GPT4-Turbo or Claude Opus3", organised_transcript)
 
     summary_prompt = (
         f"Title: {metadata['title']}\n"

@@ -1,3 +1,5 @@
 # ReadTube
 
-![Demo GIF](samples\demo.gif)
+## Demonstration
+
+![Demo GIF](samples/demo.gif)

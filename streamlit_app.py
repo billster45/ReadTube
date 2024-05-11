@@ -64,10 +64,11 @@ def main():
     }
     selected_provider = st.radio("Model provider", list(model_provider_options.keys()), horizontal=True, label_visibility='collapsed')
     model_provider = model_provider_options[selected_provider]
-    
+
     if model_provider == "openai":
         st.markdown('#### 🔑 Your OpenAI API key')
         openai_api_key = st.text_input("[Get your key from OpenAI](https://platform.openai.com/account/api-keys) : ", placeholder="sk-****************************************", type="password")
+        st.warning('After getting your OpenAI API key and entering above, make sure to add credit to your account for the key to work. Go to https://platform.openai.com/settings/organization/billing and click on "Add credit to balance".', icon="ℹ️")
         anthropic_api_key = ""
     elif model_provider == "anthropic":
         st.markdown('#### 🔑 Your Anthropic API key')

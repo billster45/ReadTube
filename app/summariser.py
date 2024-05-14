@@ -132,7 +132,7 @@ def get_summary(text, metadata, model_choice, api_key, generate_transcript, mode
         chunk_count = 0  # Initialize a counter for chunks
         for chunk in texts:
             token_count_send = len(enc.encode(chunk))
-            send_cost_transcript += token_count_send / 1000 * 0.01
+            send_cost_transcript += token_count_send / 1_000_000 * 5.00  # Updated cost rate for input tokens
             if model_provider == "openai":
                 for resp in completion_with_backoff(model_choice, [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": f"Split this YouTube video transcript into very short readable paragraphs. Only return the text with no other messages. Be diligent and ensure to return every word of the transcript but still correct spelling, typos and ensure correct capitalisation. Finally, detect multiple short paragraphs that are related and add a plain text subheading before them that summarises the main topics. : {chunk}"}], api_key, stream=True, model_provider=model_provider):
                     if resp.choices[0].delta.content is not None:
@@ -142,7 +142,7 @@ def get_summary(text, metadata, model_choice, api_key, generate_transcript, mode
 
                         height = estimate_text_area_height(organised_transcript)
                         chunk_key = f"chunk_{chunk_count}"  # Unique key for each chunk
-                        organised_transcript_placeholder.text_area("Transcript split into paragraphs returning from GPT4-Turbo", organised_transcript, height=height, key=chunk_key)
+                        organised_transcript_placeholder.text_area("Transcript split into paragraphs returning from GPT4-o", organised_transcript, height=height, key=chunk_key)
 
                         chunk_count += 1  # Increment the chunk counter
 
@@ -162,19 +162,15 @@ def get_summary(text, metadata, model_choice, api_key, generate_transcript, mode
                         organised_transcript_placeholder.text_area("Transcript split into paragraphs returning from Claude", organised_transcript, height=height, key=chunk_key)
                         chunk_count += 1  # Increment the chunk counter
 
-        # Displaying the information from the last chunk
-        #st.info(f"Last Finish Reason: {last_finish_reason}")
-        #st.info(f"Last Chunk Created Time: {datetime.fromtimestamp(last_chunk_created_time).strftime('%Y-%m-%d %H:%M:%S')}")
-
         completion_tokens_used_transcript = len(enc.encode(organised_transcript))
         st.info(f"Count of organised transcript tokens received: {completion_tokens_used_transcript:,}")
-        receive_cost_transcript = completion_tokens_used_transcript / 1000 * 0.03
+        receive_cost_transcript = completion_tokens_used_transcript / 1_000_000 * 15.00  # Updated cost rate for output tokens
 
     else:
         # If generate_transcript is False, skip the above processing
         receive_cost_transcript = 0
         organised_transcript = "Returning the transcript organised into readable paragraphs was not selected."
-        organised_transcript_placeholder.text_area("Transcript split into paragraphs returning from GPT4-Turbo or Claude Opus3", organised_transcript)
+        organised_transcript_placeholder.text_area("Transcript split into paragraphs returning from GPT4-o or Claude Opus3", organised_transcript)
 
     summary_prompt = (
         f"Title: {metadata['title']}\n"
@@ -186,7 +182,7 @@ def get_summary(text, metadata, model_choice, api_key, generate_transcript, mode
 
     word_count_send_summary = len(summary_prompt.split())
     token_count_send_summary = len(enc.encode(summary_prompt))
-    send_cost_summary = token_count_send_summary / 1000 * 0.01
+    send_cost_summary = token_count_send_summary / 1_000_000 * 5.00  # Updated cost rate for input tokens
 
     # Create placeholders for streaming text
     summary_placeholder = st.empty()
@@ -197,7 +193,7 @@ def get_summary(text, metadata, model_choice, api_key, generate_transcript, mode
             if resp.choices[0].delta.content is not None:
                 summary += resp.choices[0].delta.content
                 height = estimate_text_area_height(summary)
-                summary_placeholder.text_area("YouTube video summary from GPT4-Turbo", summary, height=int(height))
+                summary_placeholder.text_area("YouTube video summary from GPT-4o", summary, height=int(height))
 
     elif model_provider == "anthropic":
         stream_manager = completion_with_backoff(
@@ -214,7 +210,7 @@ def get_summary(text, metadata, model_choice, api_key, generate_transcript, mode
                 summary_placeholder.text_area("YouTube video summary from Claude", summary, height=int(height))
 
     completion_tokens_used_summary = len(enc.encode(summary))
-    receive_cost_summary = completion_tokens_used_summary / 1000 * 0.03
+    receive_cost_summary = completion_tokens_used_summary / 1_000_000 * 15.00  # Updated cost rate for output tokens
 
     # Calculating total cost
     total_cost = send_cost_transcript + receive_cost_transcript + send_cost_summary + receive_cost_summary

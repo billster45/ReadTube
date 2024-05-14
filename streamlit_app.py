@@ -25,7 +25,7 @@ def main():
 
         How it works:
 
-        1. 🤖 Select the model provider, OpenAI (gpt-4-turbo) or Anthropic (claude-3-opus-20240229) you want to use for generating the summary and organising the transcript.
+        1. 🤖 Select the model provider, OpenAI (GPT-4o) or Anthropic (Claude-Opus3) you want to use for generating the summary and organising the transcript.
 
         2. 🔑 Enter your API key for the selected model provider. The app will only show the input box for the relevant API key based on your selection.
 
@@ -44,7 +44,7 @@ def main():
         - Fetch the video transcript.
         - Take screenshots of the video at the specified interval.
         - Display the screenshots and the corresponding transcript segments in the app.
-        - Send the transcript to the selected model provider (OpenAI or Anthropic) for generating a summary and organising the full transcript into readable paragraphs (if the option is selected).
+        - Send the transcript to the selected model provider (OpenAI - GPT-4o or Anthropic Claude Opus3) for generating a summary and organising the full transcript into readable paragraphs (if the option is selected).
         - Generate a summary of the video using the selected model provider.
         - Create an HTML file with the video summary, full organised transcript (if selected), screenshots, and corresponding transcript segments.
         - Display the generated HTML file in the app, allowing you to read through the video content.
@@ -59,8 +59,8 @@ def main():
 
     st.markdown('#### 🤖 Model provider')
     model_provider_options = {
-        "OpenAI": "openai",
-        "Anthropic": "anthropic"
+        "OpenAI - GPT-4o": "openai",
+        "Anthropic - Claude Opus3": "anthropic"
     }
     selected_provider = st.radio("Model provider", list(model_provider_options.keys()), horizontal=True, label_visibility='collapsed')
     model_provider = model_provider_options[selected_provider]
@@ -222,7 +222,7 @@ def main():
 
 def process_video(url, openai_api_key, anthropic_api_key, segment_length, model_provider, generate_transcript):
     if model_provider == "openai":
-        model_choice = "gpt-4-turbo"
+        model_choice = "gpt-4o"
         api_key = openai_api_key
     elif model_provider == "anthropic":
         model_choice = "claude-3-opus-20240229"
